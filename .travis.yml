@@ -15,10 +15,10 @@ before_install:
   - gcloud config set compute/zone us-central1-c
   - gcloud container clusters get-credentials multi-k8s-cluster
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
-  - docker build -t sankarmuthaiah/multi-docker-client -f ./client/Dockerfile.dev ./client
+  - docker build -t sankarmuthaiah/mutli-docker-test -f ./client/Dockerfile.dev ./client
 
 script:
-  - docker run -e CI=true sankarmuthaiah/mutli-docker-client npm run test
+  - docker run -e CI=true sankarmuthaiah/mutli-docker-test npm run test
 
 deploy:
   provider: script
