@@ -1,0 +1,37 @@
+sudo: required
+services:
+  - docker
+env:
+  global:
+    # Get the sha corresponding to current git commit
+    - SHA=$(git rev-parse HEAD)
+    # Disable Google CLI prompts requesting user input
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1
+before_install:
+  # Decrypt the service account file that has the Google Cloud access info
+  - openssl aes-256-cbc -K $encrypted_9f3b5599b056_key -iv $encrypted_9f3b5599b056_iv -in service-account.json.enc -out service-account.json -d
+  # Install Google SDK
+  - curl https://sdk.cloud.google.com | bash > /dev/null;
+  # Source env details
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  # Install Kubectl
+  - gcloud components update kubectl
+  # Pass Gloud credentials via decrypted file
+  - gcloud auth activate-service-account --key-file service-account.json
+  # Setup project, zone and kubernetes cluster
+  - gcloud config set project multi-k8s-283506
+  - gcloud config set compute/zone us-central1-c
+  - gcloud container clusters get-credentials multi-k8s-cluster
+  # Log into the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Build the test docker image
+  - docker build -t sankarmuthaiah/multi-docker-client -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true sankarmuthaiah/mutli-docker-test npm run test
+
+deploy:
+  provider: script
+  script: bash ./deploy.sh
+  on:
+    branch: master
