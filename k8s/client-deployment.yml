@@ -16,4 +16,4 @@ spec:
         - name: client
           image: sankarmuthaiah/multi-docker-client
           ports:
-            - containerPort: 5001
+            - containerPort: 3000
